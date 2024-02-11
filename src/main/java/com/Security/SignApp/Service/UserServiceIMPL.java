@@ -109,6 +109,17 @@ public class UserServiceIMPL implements UserService{
 
     }
 
+    @Override
+    public String resendVerification(String userEmail, HttpServletRequest request) {
+        log.info("CHECKING IF EMAIL EXISTS...");
+        UserEntity userEntity = userRepository.findByEmail(userEmail).orElseThrow(()->new CustomError("EMAIL DOES NOT EXIST","TRY WITH A DIFFERENT EMAIL"));
+        log.info("IT EXISTS!, NOW PUBLISHING EVENT TO SEND VERIFICATION CODE.");
+
+        applicationEventPublisher.publishEvent(new UserActivationEvent(userEntity,generateTemplate(request)));
+
+        return "VERIFICATION MAIL WAS SENT AGAIN.";
+    }
+
     private String generateTemplate(HttpServletRequest request) {
         log.info("GENERATING URL TEMPLATE...");
         return "http://"

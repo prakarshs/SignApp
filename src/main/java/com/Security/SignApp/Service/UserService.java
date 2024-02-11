@@ -13,4 +13,6 @@ public interface UserService {
     String sendMail(MailTemplate mailTemplate, String email);
 
     String activateUser(String verificationToken);
+
+    String resendVerification(String userEmail, HttpServletRequest request);
 }

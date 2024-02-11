@@ -30,4 +30,9 @@ public class UserController {
     private ResponseEntity<String> activate(@RequestParam(name = "token") String verificationToken){
         return new ResponseEntity<>(userService.activateUser(verificationToken),HttpStatus.OK);
     }
+
+    @PostMapping("/resendToken/{userEmail}")
+    private ResponseEntity<String> resend(@PathVariable String userEmail, HttpServletRequest request){
+        return new ResponseEntity<>(userService.resendVerification(userEmail, request),HttpStatus.OK);
+    }
 }
