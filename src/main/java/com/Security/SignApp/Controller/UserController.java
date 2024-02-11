@@ -1,5 +1,6 @@
 package com.Security.SignApp.Controller;
 import com.Security.SignApp.Entity.UserEntity;
+import com.Security.SignApp.Model.ResetPasswordRequest;
 import com.Security.SignApp.Model.UserRequest;
 import com.Security.SignApp.Service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,8 +32,19 @@ public class UserController {
         return new ResponseEntity<>(userService.activateUser(verificationToken),HttpStatus.OK);
     }
 
-    @PostMapping("/resendToken/{userEmail}")
+    @GetMapping("/resendToken/{userEmail}")
     private ResponseEntity<String> resend(@PathVariable String userEmail, HttpServletRequest request){
         return new ResponseEntity<>(userService.resendVerification(userEmail, request),HttpStatus.OK);
+    }
+
+    @PostMapping("/resetPassword")
+    private ResponseEntity<String> reset(@RequestBody ResetPasswordRequest resetPassword, HttpServletRequest request){
+        return new ResponseEntity<>(userService.resetPassword(resetPassword,request),HttpStatus.OK);
+    }
+
+    @GetMapping("/reset")
+    private  ResponseEntity<String> resetConfirm(@RequestParam(name = "token") String resetToken){
+        return new ResponseEntity<>(userService.resetConfirm(resetToken),HttpStatus.OK);
+
     }
 }
