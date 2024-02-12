@@ -7,6 +7,7 @@ import com.Security.SignApp.Entity.UserVerification;
 import com.Security.SignApp.Error.CustomError;
 import com.Security.SignApp.Events.ResetPasswordEvent;
 import com.Security.SignApp.Events.UserActivationEvent;
+import com.Security.SignApp.Model.ActivateResponse;
 import com.Security.SignApp.Model.MailTemplate;
 import com.Security.SignApp.Model.ResetPasswordRequest;
 import com.Security.SignApp.Model.UserRequest;
@@ -22,6 +23,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.time.Instant;
@@ -47,8 +49,12 @@ public class UserServiceIMPL implements UserService{
     private JavaMailSender javaMailSender;
 
     @Autowired
+    private JWTService jwtService;
+
+    @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
     @Override
+    @Transactional
     public UserEntity registerUser(UserRequest userRequest, HttpServletRequest request) {
         log.info("CRATING USER...");
         UserEntity userEntity = UserEntity.builder()
@@ -58,8 +64,15 @@ public class UserServiceIMPL implements UserService{
                 .role(AppConstant.USER)
                 .state(AppConstant.INACTIVE)
                 .build();
-        log.info("SAVING USER IN DB...");
-        userRepository.save(userEntity);
+        try {
+            log.info("SAVING USER IN DB...");
+            userRepository.save(userEntity);
+        }catch (Exception e)
+        {
+            log.error("EMAIL ALREADY EXISTS!");
+            throw new CustomError(AppConstant.EMAIL_ALREADY_EXISTS,AppConstant.TRY_WITH_A_DIFFERENT_EMAIL);
+        }
+
         log.info("PUBLISHING ACTIVATION EVENT...");
         applicationEventPublisher.publishEvent(new UserActivationEvent(userEntity,generateTemplate(request)));
 
@@ -96,7 +109,7 @@ public class UserServiceIMPL implements UserService{
     }
 
     @Override
-    public String activateUser(String verificationToken) {
+    public ActivateResponse activateUser(String verificationToken) {
         log.info("CHECKING IF USER_TOKEN PRESENT...");
         UserVerification userVerification = userVerificationRepository.findByVerificationToken(verificationToken).orElseThrow(()->new CustomError(AppConstant.TOKEN_DOES_NOT_EXIST,AppConstant.TRY_WITH_A_DIFFERENT_TOKEN));
         log.info("TOKEN PRESENT! NOW CHECKING FOR EXPIRY...");
@@ -105,12 +118,17 @@ public class UserServiceIMPL implements UserService{
             UserEntity userEntity =  userVerification.getUser();
             userEntity.setState(AppConstant.ACTIVE);
             userRepository.save(userEntity);
-            return "USER WAS ACTIVATED !";
+           String accessToken = jwtService.generateToken(userEntity);
+            return ActivateResponse.builder()
+                    .accessToken(accessToken)
+                    .message("THE USER WAS ACTIVATED.").build();
         }
         else{
             log.info("THE TOKEN HAS EXPIRED, DELETING ENTRY IN USER-TOKEN DB.");
             userVerificationRepository.delete(userVerification);
-            return "TOKEN EXPIRED !";
+            return ActivateResponse.builder()
+                    .accessToken(null)
+                    .message("THE USER WAS NOT ACTIVATED.").build();
         }
 
     }

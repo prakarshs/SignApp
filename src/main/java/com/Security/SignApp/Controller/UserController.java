@@ -1,5 +1,6 @@
 package com.Security.SignApp.Controller;
 import com.Security.SignApp.Entity.UserEntity;
+import com.Security.SignApp.Model.ActivateResponse;
 import com.Security.SignApp.Model.ResetPasswordRequest;
 import com.Security.SignApp.Model.UserRequest;
 import com.Security.SignApp.Service.UserService;
@@ -28,7 +29,7 @@ public class UserController {
     }
 
     @GetMapping("/activate")
-    private ResponseEntity<String> activate(@RequestParam(name = "token") String verificationToken){
+    private ResponseEntity<ActivateResponse> activate(@RequestParam(name = "token") String verificationToken){
         return new ResponseEntity<>(userService.activateUser(verificationToken),HttpStatus.OK);
     }
 

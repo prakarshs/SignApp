@@ -2,6 +2,7 @@ package com.Security.SignApp.Events;
 
 import com.Security.SignApp.Entity.UserEntity;
 import com.Security.SignApp.Model.MailTemplate;
+import com.Security.SignApp.Service.JWTService;
 import com.Security.SignApp.Service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +17,14 @@ public class UserActivationListener implements ApplicationListener<UserActivatio
     @Autowired
     private UserService userService;
 
+
     @Override
     public void onApplicationEvent(UserActivationEvent event) {
         UserEntity user = event.getUser();
         String urlTemplate = event.getUrlTemplate();
 
-        String verificationToken = UUID.randomUUID().toString();
 
+        String verificationToken = UUID.randomUUID().toString();
         log.info(userService.saveToken(user, verificationToken));
 
         String verificationLink = urlTemplate + "/activate?token=" + verificationToken;
