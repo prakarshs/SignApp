@@ -1,6 +1,7 @@
 package com.Security.SignApp.Service;
 
 import com.Security.SignApp.Entity.UserEntity;
+import com.Security.SignApp.Model.ActivateResponse;
 import com.Security.SignApp.Model.MailTemplate;
 import com.Security.SignApp.Model.ResetPasswordRequest;
 import com.Security.SignApp.Model.UserRequest;
@@ -13,7 +14,7 @@ public interface UserService {
 
     String sendMail(MailTemplate mailTemplate, String email);
 
-    String activateUser(String verificationToken);
+    ActivateResponse activateUser(String verificationToken);
 
     String resendVerification(String userEmail, HttpServletRequest request);
 

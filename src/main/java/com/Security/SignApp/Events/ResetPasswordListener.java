@@ -2,6 +2,7 @@ package com.Security.SignApp.Events;
 
 import com.Security.SignApp.Entity.UserEntity;
 import com.Security.SignApp.Model.MailTemplate;
+import com.Security.SignApp.Service.JWTService;
 import com.Security.SignApp.Service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ public class ResetPasswordListener implements ApplicationListener<ResetPasswordE
         UserEntity userEntity = event.getUser();
         String templateUrl = event.getTemplateUrl();
         String newPassword = event.getNewPassword();
+
         String resetPasswordToken = UUID.randomUUID().toString();
 
         log.info(userService.saveResetToken(userEntity, resetPasswordToken, newPassword));
